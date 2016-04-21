@@ -118,6 +118,10 @@
 				setTimeout(updateFromUrl, 0);
 			});
 
+			imageUrl.addEventListener('focus', function() {
+				this.select();
+			});
+
 			function onMouseLeft(event) {
 				if (event.which !== 1) {
 					return;
