@@ -1,16 +1,25 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8">
 		<title>Facial asymmetry</title>
 		<style type="text/css">
+			body {
+				font-family: sans-serif;
+				font-size: 16px;
+			}
+
 			input {
 				margin: 10px 0;
 			}
 		</style>
 	</head>
 	<body>
+		<h1>Facial asymmetry</h1>
 		<div>
-			<input id="uploadimage" type="file" name="img" size="65">
+			Select an image file (it wont’t be uploaded anywhere; doesn’t work in IE &lt; 11): <input id="imagefile" type="file" name="img" size="65"><br>
+			or specify an image URL: <input id="imageurl" size="100"><br>
+			Then select the center of the face with your mouse.
 		</div>
 		<div>
 			<canvas id="left" width="10" height="10"></canvas><canvas id="right" width="10" height="10"></canvas>
@@ -19,6 +28,10 @@
 			<canvas id="original" width="10" height="10"></canvas>
 		</div>
 		<script type="text/javascript">
+			'use strict'
+
+			var imageFile = document.getElementById('imagefile');
+			var imageUrl = document.getElementById('imageurl');
 			var canvasOriginal = document.getElementById('original');
 			var canvasLeft = document.getElementById('left');
 			var canvasRight = document.getElementById('right');
@@ -27,18 +40,41 @@
 			var ctxRight = canvasRight.getContext('2d');
 			var img;
 			var scale;
+			var currentUrl;
+			var x;
 
-			function update() {
+			function updateHash() {
+				document.location.hash = currentUrl ? '#' + currentUrl + ';' + x : '';
+			}
+
+			function updateFromFile() {
 				img = new Image();
-				var file = document.getElementById('uploadimage').files[0];
+				var file = imageFile.files[0];
 				var url = window.URL || window.webkitURL;
 				var src = url.createObjectURL(file);
 				img.src = src;
 
 				img.onload = function() {
-					scale = mirror(img, img.width / 2);
+					x = img.width / 2;
+					scale = mirror(img, x);
 					url.revokeObjectURL(src);
-				}
+				};
+
+				currentUrl = null;
+				updateHash();
+			}
+
+			function updateFromUrl() {
+				currentUrl = imageUrl.value;
+				img = new Image();
+				img.src = currentUrl;
+
+				img.onload = function() {
+					x = x != null ? x : img.width / 2;
+					scale = mirror(img, x);
+				};
+
+				updateHash();
 			}
 
 			function mirror(img, leftWidth) {
@@ -75,35 +111,51 @@
 				return scale;
 			}
 
-			document.getElementById('uploadimage').addEventListener('change', update);
+			imageFile.addEventListener('change', updateFromFile);
+			imageUrl.addEventListener('change', updateFromUrl);
+
+			imageUrl.addEventListener('paste', function () {
+				setTimeout(updateFromUrl, 0);
+			});
 
 			function onMouseLeft(event) {
 				if (event.which !== 1) {
-					return true;
+					return;
 				}
 
 				var rect = this.getBoundingClientRect();
-				var x = event.clientX - rect.left;
-				scale = mirror(img, Math.min(x / scale, img.width - 1));
-				return false;
+				x = (event.clientX - rect.left) / scale;
+				scale = mirror(img, Math.min(x, img.width - 1));
+				updateHash();
+				event.preventDefault();
 			}
 
 			function onMouseRight(event) {
 				if (event.which !== 1) {
-					return true;
+					return;
 				}
 
 				var rect = this.getBoundingClientRect();
-				var x = event.clientX - rect.left;
-				scale = mirror(img, img.width - Math.min(x / scale, img.width - 1));
-				return false;
+				x = img.width - (event.clientX - rect.left) / scale;
+				scale = mirror(img, Math.min(x, img.width - 1));
+				updateHash();
+				event.preventDefault();
 			}
 
-			canvasLeft.addEventListener('click', onMouseLeft);
+			canvasLeft.addEventListener('mousedown', onMouseLeft);
 			canvasLeft.addEventListener('mousemove', onMouseLeft);
-			canvasRight.addEventListener('click', onMouseRight);
+			canvasRight.addEventListener('mousedown', onMouseRight);
 			canvasRight.addEventListener('mousemove', onMouseRight);
-			canvasOriginal.addEventListener('click', onMouseLeft);
+			canvasOriginal.addEventListener('mousedown', onMouseLeft);
+
+			var hash = document.location.hash;
+
+			if (hash) {
+				var parts = hash.substr(1).split(';');
+				imageUrl.value = parts[0];
+				x = parts[1];
+				updateFromUrl();
+			}
 		</script>
 	</body>
 </html>
