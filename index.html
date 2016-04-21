@@ -123,7 +123,7 @@
 			});
 
 			function onMouseLeft(event) {
-				if (event.which !== 1) {
+				if ('buttons' in event && !(event.buttons & 1) || event.which !== 1) {
 					return;
 				}
 
@@ -135,7 +135,7 @@
 			}
 
 			function onMouseRight(event) {
-				if (event.which !== 1) {
+				if ('buttons' in event && !(event.buttons & 1) || event.which !== 1) {
 					return;
 				}
 
