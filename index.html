@@ -50,7 +50,7 @@
 				var src = url.createObjectURL(file);
 				img.src = src;
 
-				img.onload = function() {
+				img.onload = function () {
 					x = img.width / 2;
 					scale = mirror(img, x);
 					url.revokeObjectURL(src);
@@ -65,7 +65,7 @@
 				img = new Image();
 				img.src = currentUrl;
 
-				img.onload = function() {
+				img.onload = function () {
 					x = x != null ? x : img.width / 2;
 					scale = mirror(img, x);
 				};
@@ -114,7 +114,7 @@
 				setTimeout(updateFromUrl, 0);
 			});
 
-			imageUrl.addEventListener('focus', function() {
+			imageUrl.addEventListener('focus', function () {
 				this.select();
 			});
 
