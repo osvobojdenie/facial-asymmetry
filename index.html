@@ -37,10 +37,10 @@
 			var img;
 			var scale;
 			var currentUrl;
-			var x;
+			var currentX;
 
 			function updateHash() {
-				document.location.hash = currentUrl ? '#' + currentUrl + ';' + x : '';
+				document.location.hash = currentUrl ? '#' + currentUrl + ';' + currentX : '';
 			}
 
 			function updateFromFile() {
@@ -51,26 +51,24 @@
 				img.src = src;
 
 				img.onload = function () {
-					x = img.width / 2;
-					scale = mirror(img, x);
+					currentX = img.width / 2;
+					scale = mirror(img, currentX);
 					url.revokeObjectURL(src);
+					currentUrl = null;
+					updateHash();
 				};
-
-				currentUrl = null;
-				updateHash();
 			}
 
-			function updateFromUrl() {
+			function updateFromUrl(x) {
 				currentUrl = imageUrl.value;
 				img = new Image();
 				img.src = currentUrl;
 
 				img.onload = function () {
-					x = x != null ? x : img.width / 2;
-					scale = mirror(img, x);
+					currentX = x != null ? x : img.width / 2;
+					scale = mirror(img, currentX);
+					updateHash();
 				};
-
-				updateHash();
 			}
 
 			function mirror(img, leftWidth) {
@@ -124,8 +122,8 @@
 				}
 
 				var rect = this.getBoundingClientRect();
-				x = (event.clientX - rect.left) / scale;
-				scale = mirror(img, Math.min(x, img.width - 1));
+				currentX = (event.clientX - rect.left) / scale;
+				scale = mirror(img, Math.min(currentX, img.width - 1));
 				updateHash();
 				event.preventDefault();
 			}
@@ -136,8 +134,8 @@
 				}
 
 				var rect = this.getBoundingClientRect();
-				x = img.width - (event.clientX - rect.left) / scale;
-				scale = mirror(img, Math.min(x, img.width - 1));
+				currentX = img.width - (event.clientX - rect.left) / scale;
+				scale = mirror(img, Math.min(currentX, img.width - 1));
 				updateHash();
 				event.preventDefault();
 			}
@@ -153,8 +151,7 @@
 			if (hash) {
 				var parts = hash.substr(1).split(';');
 				imageUrl.value = parts[0];
-				x = parts[1];
-				updateFromUrl();
+				updateFromUrl(parts[1]);
 			}
 		</script>
 	</body>
